@@ -2,6 +2,7 @@
 
 !.gitignore
 !*.c
+!*.sh
 !makefile
 !Makefile
 
