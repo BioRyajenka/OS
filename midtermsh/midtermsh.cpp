@@ -19,10 +19,6 @@ std::string command_buffer;
 void on_found(std::string &s, std::size_t &found) {
 	s = command_buffer.substr(0, found);
 	command_buffer = command_buffer.substr(found + 1, (int)command_buffer.length() - found - 1);
-	
-	std::cout << command_buffer;
-
-	command_buffer = "";
 }
 
 bool read_next_command(std::string &s) {
