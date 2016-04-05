@@ -124,7 +124,7 @@ int main() {
 			}
 		}
 
-		int finished_childs = 0;
+//		int finished_childs = 0;
 
 		for (size_t i = 0; i < subcommands.size(); i++) {
 			//fprintf(stderr, "i = %d, command = %s\n", i, subcommands[i].c_str());
