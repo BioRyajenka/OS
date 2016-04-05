@@ -14,6 +14,7 @@
 #include <iostream>
 
 std::string command_buffer;
+std::string summary_buffer;
 
 bool read_next_command(std::string &s) {
 	printf("$");
@@ -25,11 +26,16 @@ bool read_next_command(std::string &s) {
 	while ((received = read(STDIN_FILENO, buffer, BUFFER_SIZE)) > 0) {
 		buffer[received] = 0;
 		command_buffer += buffer;
+		summary_buffer += buffer;
 
 		std::size_t found = command_buffer.find("\n");
 		if (found != std::string::npos) {
 			s = command_buffer.substr(0, found);
 			command_buffer = command_buffer.substr(found + 1, (int)command_buffer.length() - found - 1);
+
+
+
+			//command_buffer = "";
 			return true;
 		}
 	}
@@ -78,7 +84,7 @@ void execute_command(std::string command) {
 	// for (auto &s : ss) {
 	// 	fprintf(stderr, " %s", s.c_str());
 	// }
-	// fprintf(stderr, "\n");
+	//fprintf(stderr, "\n");
 
 	execvp(argv[0], argv);
 }
@@ -112,7 +118,7 @@ int main() {
 		std::vector<int*> pipes;
 		for (size_t i = 0; i < subcommands.size(); i++) {
 			pipes.push_back(new int[2]);
-			if (pipe2(pipes.back(), O_CLOEXEC) == -1) { //pipe(pipes.back()) == -1) {
+			if (pipe(pipes.back()) == -1) { //pipe2(pipes.back(), O_CLOEXEC) == -1) {
 				perror("pipe");
 				return 0;
 			}
@@ -136,7 +142,7 @@ int main() {
 					close(pipes[i + 1][1]);
 				}
 
-				sleep(10);
+//				sleep(10);
 
 				execute_command(subcommands[i]);
 				fprintf(stderr, "command '%s' call wasn't successful\n", subcommands[i].c_str());
@@ -151,9 +157,8 @@ int main() {
 			}
 			// parent
 
-			int wpid;
 			int status;
-			while ((wpid = wait(&status)) > 0) {
+			while ((wait(&status)) > 0) {
 		        if (status == 2) {
 		        	printf("command %s was stopped\n", subcommands[i].c_str());
 		        }
@@ -163,5 +168,6 @@ int main() {
 		busy = false;
 	}
 	printf("\n");
+	printf("summary buffer: %s\n", summary_buffer.c_str());
 	return 0;
 }
