@@ -8,13 +8,22 @@
 #include <signal.h>
 //#include <string.h>
 
+#include <thread>
 #include <string>
 #include <vector>
 #include <sstream>
 #include <iostream>
 
 std::string command_buffer;
-std::string summary_buffer;
+
+void on_found(std::string &s, std::size_t &found) {
+	s = command_buffer.substr(0, found);
+	command_buffer = command_buffer.substr(found + 1, (int)command_buffer.length() - found - 1);
+	
+	std::cout << command_buffer;
+
+	command_buffer = "";
+}
 
 bool read_next_command(std::string &s) {
 	printf("$");
@@ -26,16 +35,10 @@ bool read_next_command(std::string &s) {
 	while ((received = read(STDIN_FILENO, buffer, BUFFER_SIZE)) > 0) {
 		buffer[received] = 0;
 		command_buffer += buffer;
-		summary_buffer += buffer;
 
 		std::size_t found = command_buffer.find("\n");
 		if (found != std::string::npos) {
-			s = command_buffer.substr(0, found);
-			command_buffer = command_buffer.substr(found + 1, (int)command_buffer.length() - found - 1);
-
-
-
-			//command_buffer = "";
+			on_found(s, found);
 			return true;
 		}
 	}
@@ -46,8 +49,7 @@ bool read_next_command(std::string &s) {
 	// TODO: copypast
 	std::size_t found = command_buffer.find("\n");
 	if (found != std::string::npos) {
-		s = command_buffer.substr(0, found);
-		command_buffer = command_buffer.substr(found + 1, (int)command_buffer.length() - found - 1);
+		on_found(s, found);
 		return true;
 	}
 
@@ -124,8 +126,6 @@ int main() {
 			}
 		}
 
-		int finished_childs = 0;
-
 		for (size_t i = 0; i < subcommands.size(); i++) {
 			//fprintf(stderr, "i = %d, command = %s\n", i, subcommands[i].c_str());
 			// executing
@@ -168,6 +168,5 @@ int main() {
 		busy = false;
 	}
 	printf("\n");
-	printf("summary buffer: %s\n", summary_buffer.c_str());
 	return 0;
 }
